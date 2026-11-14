@@ -64,7 +64,8 @@ button:focus-visible,select:focus-visible,input:focus-visible,label:focus-within
 .opts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:6px;padding:8px 10px;cursor:pointer;background:transparent;width:100%;text-align:left;font:inherit;color:inherit}
 .opt:hover{border-color:var(--accent)}
-.opt .n{font-family:var(--f-mono);font-weight:600;color:var(--muted);flex:none;width:1.4em}
+.opt .n{flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-top:-1px;border:1.5px solid currentColor;border-radius:50%;font-family:var(--f-sans,inherit);font-size:13px;font-weight:700;line-height:1;color:var(--muted)}
+.opt.pick .n{color:var(--accent)}
 .opt .t{min-width:0}
 .opt.pick{border-color:var(--accent);background:var(--accent-soft)}
 .opt.is-ans{border-color:var(--ok);background:var(--ok-soft)}
@@ -227,7 +228,7 @@ function card(d,{pick=null,reveal=false,interactive=true,ctx="study"}={}){
   const done=pick!==null;const show=reveal||done;
   const cls=done?(pick===d.a?"right":"wrong"):"";
   const opts=d.o.map((o,i)=>{let c="opt";if(show&&i===d.a)c+=" is-ans";if(done&&i===pick&&pick!==d.a)c+=" is-bad";
-    return `<li><button class="${c}" data-id="${d.id}" data-i="${i}" data-ctx="${ctx}" ${(!interactive||done)?"disabled":""}><span class="n">${NUM[i]}</span><span class="t">${esc(o)}</span></button></li>`}).join("");
+    return `<li><button class="${c}" data-id="${d.id}" data-i="${i}" data-ctx="${ctx}" ${(!interactive||done)?"disabled":""}><span class="n">${i+1}</span><span class="t">${esc(o)}</span></button></li>`}).join("");
   const exp=show?`<div class="exp"><div class="ansline">정답 ${NUM[d.a]}</div><p>${esc(d.e)}</p></div>`:"";
   const inW=wrong.has(d.id);
   return `<article class="card ${cls}" id="c-${ctx}-${d.id}"><div class="meta"><span class="qid">${d.id}</span><span>${esc(d.m)}</span><span class="tag">${esc(d.t)}</span><span class="lamp ${inW?"on":""}" title="${inW?"오답노트에 있음":""}"></span></div>
