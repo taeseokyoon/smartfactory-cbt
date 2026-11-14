@@ -152,6 +152,7 @@ table.score td.num,table.score th.num{text-align:right}
       <span style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn ghost" id="toggleAll">정답·해설 모두 보기</button>
         <button class="btn ghost" id="resetPage">이 페이지 풀이 초기화</button>
+        <button class="btn ghost" id="resetAll">전체 기록 초기화</button>
       </span>
     </div>
     <div class="list" id="studyList"></div>
@@ -198,15 +199,15 @@ const SUBJ={1:"자동제어",2:"네트워크 일반",3:"스마트공장 시스�
 const NUM=["①","②","③","④"];
 const PER=20;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-let wrong=new Set(store.get("sf_wrong",[]));
-let solved=store.get("sf_solved",{});
+let wrong=new Set(store.get("sf730_wrong",[]));
+let solved=store.get("sf730_solved",{});
 const byId=Object.fromEntries(DATA.map(d=>[d.id,d]));
-const st={s:store.get("sf_s",1),topic:"",kw:"",page:1,showAll:false};
+const st={s:store.get("sf730_s",1),topic:"",kw:"",page:1,showAll:false};
 const $=id=>document.getElementById(id);
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-function saveW(){store.set("sf_wrong",[...wrong]);$("wcount").textContent=wrong.size?`(${wrong.size})`:"";}
-function saveS(){store.set("sf_solved",solved)}
+function saveW(){store.set("sf730_wrong",[...wrong]);$("wcount").textContent=wrong.size?`(${wrong.size})`:"";}
+function saveS(){store.set("sf730_solved",solved)}
 
 /* coverage table */
 (function(){
@@ -263,7 +264,7 @@ document.addEventListener("click",e=>{
   const pg=e.target.closest("[data-pg]");if(pg&&!pg.disabled){st.page=+pg.dataset.pg;renderStudy();$("v-study").scrollIntoView({block:"start"});return}
 });
 function renderCount(){const list=filtered();const sCnt=list.filter(d=>solved[d.id]!==undefined).length;const pages=Math.max(1,Math.ceil(list.length/PER));$("countLabel").textContent=`${SUBJ[st.s]} · ${list.length}문항 중 ${sCnt}문항 풀이 · ${st.page}/${pages}쪽`}
-$("subjSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;st.s=+b.dataset.s;st.topic="";st.page=1;store.set("sf_s",st.s);fillTopics();renderStudy()});
+$("subjSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;st.s=+b.dataset.s;st.topic="";st.page=1;store.set("sf730_s",st.s);fillTopics();renderStudy()});
 $("topicSel").addEventListener("change",e=>{st.topic=e.target.value;st.page=1;renderStudy()});
 let kt;$("q").addEventListener("input",e=>{clearTimeout(kt);kt=setTimeout(()=>{st.kw=e.target.value;st.page=1;renderStudy()},180)});
 $("toggleAll").addEventListener("click",()=>{st.showAll=!st.showAll;renderStudy()});
@@ -276,7 +277,7 @@ document.querySelector("nav.modes").addEventListener("click",e=>{const b=e.targe
 /* exam */
 const exam={qs:[],ans:{},end:0,tm:null,r:null};
 const ROUNDS=[["1-008", "1-009", "1-010", "1-044", "1-058", "1-078", "1-081", "1-099", "1-105", "1-112", "1-130", "1-143", "1-154", "1-161", "1-169", "1-174", "1-179", "1-185", "1-188", "1-212", "2-014", "2-017", "2-052", "2-054", "2-055", "2-072", "2-091", "2-097", "2-134", "2-144", "2-152", "2-162", "2-170", "2-171", "2-173", "2-180", "2-195", "2-202", "2-212", "2-222", "3-012", "3-014", "3-035", "3-046", "3-065", "3-071", "3-097", "3-108", "3-113", "3-120", "3-132", "3-144", "3-145", "3-150", "3-179", "3-184", "3-205", "3-210", "3-217", "3-241"], ["1-014", "1-021", "1-025", "1-052", "1-060", "1-068", "1-075", "1-094", "1-097", "1-098", "1-111", "1-119", "1-124", "1-125", "1-157", "1-171", "1-186", "1-207", "1-208", "1-237", "2-026", "2-028", "2-035", "2-039", "2-066", "2-073", "2-076", "2-094", "2-101", "2-109", "2-114", "2-123", "2-137", "2-160", "2-165", "2-179", "2-184", "2-188", "2-215", "2-234", "3-006", "3-009", "3-026", "3-076", "3-082", "3-095", "3-098", "3-129", "3-137", "3-147", "3-154", "3-160", "3-189", "3-190", "3-196", "3-201", "3-207", "3-220", "3-225", "3-247"], ["1-011", "1-027", "1-036", "1-088", "1-091", "1-102", "1-116", "1-117", "1-140", "1-141", "1-148", "1-170", "1-173", "1-199", "1-206", "1-210", "1-224", "1-230", "1-235", "1-244", "2-003", "2-008", "2-021", "2-025", "2-041", "2-046", "2-065", "2-067", "2-080", "2-129", "2-136", "2-139", "2-146", "2-168", "2-178", "2-191", "2-201", "2-205", "2-221", "2-239", "3-025", "3-037", "3-050", "3-051", "3-057", "3-063", "3-066", "3-069", "3-091", "3-101", "3-111", "3-121", "3-135", "3-157", "3-162", "3-172", "3-182", "3-202", "3-219", "3-232"], ["1-026", "1-028", "1-046", "1-057", "1-080", "1-093", "1-113", "1-114", "1-144", "1-145", "1-147", "1-151", "1-163", "1-167", "1-175", "1-193", "1-194", "1-215", "1-216", "1-233", "2-040", "2-048", "2-063", "2-087", "2-106", "2-112", "2-124", "2-132", "2-138", "2-147", "2-155", "2-156", "2-177", "2-186", "2-190", "2-208", "2-220", "2-223", "2-231", "2-238", "3-007", "3-023", "3-061", "3-072", "3-074", "3-084", "3-102", "3-110", "3-115", "3-118", "3-119", "3-128", "3-131", "3-141", "3-148", "3-161", "3-176", "3-204", "3-229", "3-242"], ["1-013", "1-032", "1-050", "1-056", "1-083", "1-084", "1-096", "1-104", "1-122", "1-127", "1-153", "1-158", "1-164", "1-165", "1-181", "1-183", "1-201", "1-221", "1-241", "1-243", "2-005", "2-019", "2-020", "2-045", "2-051", "2-075", "2-082", "2-092", "2-110", "2-115", "2-125", "2-128", "2-143", "2-148", "2-169", "2-174", "2-187", "2-203", "2-228", "2-230", "3-001", "3-024", "3-039", "3-079", "3-083", "3-089", "3-107", "3-125", "3-138", "3-143", "3-153", "3-156", "3-165", "3-188", "3-192", "3-200", "3-214", "3-222", "3-230", "3-246"], ["1-031", "1-063", "1-065", "1-069", "1-072", "1-074", "1-079", "1-090", "1-120", "1-129", "1-134", "1-138", "1-159", "1-160", "1-197", "1-205", "1-211", "1-226", "1-239", "1-242", "2-013", "2-029", "2-030", "2-043", "2-056", "2-074", "2-077", "2-084", "2-088", "2-093", "2-102", "2-111", "2-126", "2-130", "2-141", "2-163", "2-183", "2-189", "2-199", "2-217", "3-015", "3-036", "3-049", "3-055", "3-064", "3-078", "3-092", "3-099", "3-114", "3-122", "3-140", "3-152", "3-174", "3-175", "3-183", "3-195", "3-216", "3-218", "3-221", "3-234"], ["1-015", "1-017", "1-022", "1-035", "1-037", "1-049", "1-053", "1-055", "1-085", "1-106", "1-109", "1-115", "1-135", "1-136", "1-137", "1-146", "1-196", "1-223", "1-225", "1-234", "2-006", "2-011", "2-018", "2-059", "2-061", "2-069", "2-071", "2-079", "2-103", "2-117", "2-145", "2-153", "2-158", "2-164", "2-196", "2-198", "2-210", "2-225", "2-227", "2-236", "3-002", "3-017", "3-028", "3-033", "3-047", "3-073", "3-081", "3-104", "3-112", "3-130", "3-142", "3-146", "3-163", "3-185", "3-203", "3-209", "3-212", "3-224", "3-244", "3-245"], ["1-045", "1-048", "1-070", "1-082", "1-087", "1-103", "1-123", "1-128", "1-132", "1-156", "1-168", "1-172", "1-177", "1-182", "1-192", "1-202", "1-203", "1-213", "1-219", "1-229", "2-015", "2-024", "2-032", "2-044", "2-053", "2-057", "2-062", "2-064", "2-099", "2-100", "2-122", "2-135", "2-142", "2-157", "2-166", "2-182", "2-206", "2-214", "2-216", "2-233", "3-005", "3-032", "3-042", "3-052", "3-056", "3-062", "3-087", "3-093", "3-134", "3-136", "3-149", "3-159", "3-173", "3-186", "3-194", "3-198", "3-208", "3-215", "3-226", "3-239"], ["1-007", "1-066", "1-071", "1-095", "1-100", "1-108", "1-110", "1-118", "1-126", "1-133", "1-152", "1-155", "1-162", "1-178", "1-184", "1-190", "1-191", "1-195", "1-204", "1-240", "2-022", "2-037", "2-042", "2-047", "2-049", "2-070", "2-078", "2-104", "2-107", "2-113", "2-118", "2-151", "2-159", "2-167", "2-172", "2-185", "2-197", "2-211", "2-226", "2-235", "3-011", "3-031", "3-040", "3-045", "3-060", "3-068", "3-075", "3-096", "3-100", "3-103", "3-105", "3-116", "3-117", "3-124", "3-127", "3-139", "3-151", "3-177", "3-180", "3-243"], ["1-004", "1-043", "1-051", "1-061", "1-062", "1-076", "1-092", "1-121", "1-131", "1-142", "1-150", "1-166", "1-187", "1-189", "1-209", "1-217", "1-220", "1-222", "1-228", "1-236", "2-001", "2-004", "2-007", "2-010", "2-023", "2-027", "2-031", "2-050", "2-060", "2-068", "2-085", "2-108", "2-119", "2-133", "2-154", "2-175", "2-176", "2-181", "2-200", "2-229", "3-004", "3-008", "3-013", "3-029", "3-059", "3-070", "3-080", "3-090", "3-106", "3-123", "3-126", "3-155", "3-166", "3-170", "3-171", "3-191", "3-193", "3-206", "3-223", "3-240"], ["1-012", "1-019", "1-033", "1-041", "1-047", "1-073", "1-077", "1-086", "1-107", "1-139", "1-149", "1-176", "1-180", "1-200", "1-214", "1-218", "1-227", "1-231", "1-232", "1-238", "2-016", "2-036", "2-081", "2-089", "2-105", "2-116", "2-127", "2-140", "2-149", "2-150", "2-161", "2-194", "2-204", "2-207", "2-213", "2-218", "2-219", "2-224", "2-232", "2-237", "3-003", "3-041", "3-043", "3-044", "3-058", "3-067", "3-085", "3-088", "3-109", "3-133", "3-158", "3-178", "3-181", "3-187", "3-197", "3-199", "3-213", "3-231", "3-237", "3-238"]];
-let rec=store.get("sf_rounds",{});
+let rec=store.get("sf730_rounds",{});
 function renderRounds(){$("rounds").innerHTML=ROUNDS.map((ids,i)=>{const r=rec[i+1];return `<button class="rbtn" data-round="${i+1}"><b>실전 모의고사 ${i+1}회</b><small>${r?`최근 ${r.avg.toFixed(1)}점 · <span class="${r.pass?"ok":"ng"}">${r.pass?"합격":"불합격"}</span> · ${r.date}`:"미응시 · 60문항"}</small></button>`}).join("")+`<button class="rbtn rand" data-round="0"><b>랜덤 모의고사</b><small>730제에서 무작위 60문항</small></button>`}
 renderRounds();
 function pick20(s){const pool=DATA.filter(d=>d.s===s);const by={};pool.forEach(d=>(by[d.t]=by[d.t]||[]).push(d));
@@ -298,7 +299,7 @@ function submit(fromBtn){const n=Object.keys(exam.ans).length;
   const pts={1:sc[1]*5,2:sc[2]*5,3:sc[3]*5};const avg=(pts[1]+pts[2]+pts[3])/3;const fails=[1,2,3].filter(s=>pts[s]<40);const pass=!fails.length&&avg>=60;
   const tpStats={};exam.qs.forEach(d=>{const k=d.s+"|"+d.t;tpStats[k]=tpStats[k]||[0,0];tpStats[k][1]++;if(exam.ans[d.id]===d.a)tpStats[k][0]++});
   const weak=Object.entries(tpStats).filter(([k,v])=>v[0]<v[1]).sort((a,b)=>(a[1][0]/a[1][1])-(b[1][0]/b[1][1])).slice(0,6).map(([k])=>k.split("|")[1]);
-  if(exam.r){const n=new Date();rec[exam.r]={avg,pass,date:`${n.getMonth()+1}/${n.getDate()}`};store.set("sf_rounds",rec);renderRounds()}
+  if(exam.r){const n=new Date();rec[exam.r]={avg,pass,date:`${n.getMonth()+1}/${n.getDate()}`};store.set("sf730_rounds",rec);renderRounds()}
   $("resultBox").innerHTML=`<div style="color:var(--muted);font-size:13px">${exam.r?`실전 모의고사 ${exam.r}회`:"랜덤 모의고사"}</div><h2>평균 ${avg.toFixed(1)}점 <span class="verdict ${pass?"pass":"fail"}">${pass?"합격":"불합격"}</span></h2>
    <div style="color:var(--muted);font-size:13px">${fails.length?`과락 과목: ${fails.map(s=>SUBJ[s]).join(", ")} (40점 미만)`:avg<60?"평균 60점 미만":"모든 과목 40점 이상, 평균 60점 이상"}</div>
    <div style="overflow-x:auto"><table class="score"><tr><th>과목</th><th class="num">정답</th><th class="num">점수</th><th style="width:40%"></th></tr>
@@ -315,5 +316,10 @@ function renderWrong(){const ids=DATA.filter(d=>wrong.has(d.id));
   $("wrongList").innerHTML=ids.length?ids.map(d=>card(d,{ctx:"wrong"})).join(""):`<div class="empty">아직 담긴 문항이 없습니다. 문제 풀이나 모의고사에서 틀린 문항이 자동으로 이곳에 모입니다.</div>`}
 let clearArm=0;$("clearWrong").addEventListener("click",e=>{if(Date.now()-clearArm>4000){clearArm=Date.now();e.target.textContent="한 번 더 누르면 비웁니다";return}wrong.clear();saveW();e.target.textContent="오답노트 비우기";renderWrong()});
 /* wrong-note cards: answering resets state locally */
+/* full reset */
+let allArm=0;$("resetAll").addEventListener("click",e=>{if(Date.now()-allArm>4000){allArm=Date.now();e.target.textContent="한 번 더 누르면 모두 지웁니다";return}
+  solved={};wrong.clear();rec={};revealed.clear();saveS();saveW();store.set("sf730_rounds",rec);renderRounds();renderStudy();e.target.textContent="전체 기록 초기화"});
+/* drop records saved before the 730-question renumbering */
+try{["sf_rounds","sf_s","sf_solved","sf_wrong"].forEach(k=>localStorage.removeItem(k))}catch(e){}
 fillTopics();renderStudy();saveW();
 </script>
